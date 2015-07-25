@@ -10,12 +10,12 @@
 /**
  * Constantes
  */
-#define pinServoGarra 10
-#define pinServoPunhoRotate 9
-#define pinServoPunho 8
-#define pinServoCotovelo 7
-#define pinServoOmbro 6
-#define pinServoBase 12
+#define servoPinGarra 10
+#define servoPinPunhoRotate 9
+#define servoPinPunho 8
+#define servoPinCotovelo 7
+#define servoPinOmbro 6
+#define servoPinBase 12
 
 /**
  * Armazena a posição atual dos servos
@@ -28,6 +28,17 @@ int positions[] = {90,90,90,90,90,90};
 Servo svBase, svOmbro, svCotovelo, svPunho, svPunhoRotate, svGarra;
 
 /**
+ * Use para mover os servos
+ */
+void move(int base, int ombro, int cotovelo, int punho, int punhoRotate, int garra);
+
+/**
+ * Suaviza os movimentos do servo, atraves do parametro tempo.
+ * Quanto menor o tempo mais rápido será o movimento.
+ */
+void suave(int index, Servo servo, int tempo, int posicao);
+
+/**
  * Setup
  */
 void setup()
@@ -35,22 +46,22 @@ void setup()
     /**
      * Define os pinos como saída
      */
-    pinMode(pinServoGarra, OUTPUT);
-    pinMode(pinServoPunhoRotate, OUTPUT);
-    pinMode(pinServoPunho, OUTPUT);
-    pinMode(pinServoCotovelo, OUTPUT);
-    pinMode(pinServoOmbro, OUTPUT);
-    pinMode(pinServoBase, OUTPUT);
+    pinMode(servoPinGarra, OUTPUT);
+    pinMode(servoPinPunhoRotate, OUTPUT);
+    pinMode(servoPinPunho, OUTPUT);
+    pinMode(servoPinCotovelo, OUTPUT);
+    pinMode(servoPinOmbro, OUTPUT);
+    pinMode(servoPinBase, OUTPUT);
   
     /**
      * Seta o pin para cada objeto
      */
-    svGarra.attach(pinServoGarra);
-    svPunhoRotate.attach(pinServoPunhoRotate);
-    svPunho.attach(pinServoPunho);
-    svCotovelo.attach(pinServoCotovelo);
-    svOmbro.attach(pinServoOmbro);
-    svBase.attach(pinServoBase);
+    svGarra.attach(servoPinGarra);
+    svPunhoRotate.attach(servoPinPunhoRotate);
+    svPunho.attach(servoPinPunho);
+    svCotovelo.attach(servoPinCotovelo);
+    svOmbro.attach(servoPinOmbro);
+    svBase.attach(servoPinBase);
 
     /**
      * Posicionamento inicial
@@ -74,10 +85,13 @@ void setup()
 void loop()
 {
     move(150, 150, 150, 150, 150, 150);
-    delay(5000);
+    delay(1000);
     
-    move(90, 90, 90, 90, 90, 90);
-    delay(5000);
+    move(90, 10, 30, 110, 50, 150);
+    delay(1000);
+  
+    move(20, 100, 180, 50, 10, 30);
+    delay(1000);
 }
 
 /**
@@ -85,7 +99,7 @@ void loop()
  */
 void move(int base, int ombro, int cotovelo, int punho, int punhoRotate, int garra)
 {
-    int tempo = 50;
+    int tempo = 5;
 
     suave(0, svBase, tempo, base);
     suave(1, svOmbro, tempo, ombro);
