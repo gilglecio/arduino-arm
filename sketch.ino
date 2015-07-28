@@ -36,7 +36,7 @@ void move(int base, int ombro, int cotovelo, int punho, int punhoRotate, int gar
  * Suaviza os movimentos do servo, atraves do parametro tempo.
  * Quanto menor o tempo mais rápido será o movimento.
  */
-void suave(int index, Servo servo, int tempo, int posicao);
+void suave(int index, Servo servo, int posicao, int delay_min, int delay_max);
 
 /**
  * Setup
@@ -99,32 +99,82 @@ void loop()
  */
 void move(int base, int ombro, int cotovelo, int punho, int punhoRotate, int garra)
 {
-    int tempo = 5;
+    /**
+     * Quando maior a diferença entre eles, mais ingrime será a parábola
+     */
+    int delay_min = 1;
+    int delay_max = 2;
 
-    suave(0, svBase, tempo, base);
-    suave(1, svOmbro, tempo, ombro);
-    suave(2, svCotovelo, tempo, cotovelo);
-    suave(3, svPunho, tempo, punho);
-    suave(4, svPunhoRotate, tempo, punhoRotate);
-    suave(5, svGarra, tempo, garra);
+    suave(0, svBase, base, delay_min, delay_max);
+    suave(1, svOmbro, ombro, delay_min, delay_max);
+    suave(2, svCotovelo, cotovelo, delay_min, delay_max);
+    suave(3, svPunho, punho, delay_min, delay_max);
+    suave(4, svPunhoRotate, punhoRotate, delay_min, delay_max);
+    suave(5, svGarra, garra, delay_min, delay_max);
 }
 
 /**
  * Suaviza os movimentos do servo, atraves do parametro tempo.
  * Quanto menor o tempo mais rápido será o movimento.
  */
-void suave(int index, Servo servo, int tempo, int posicao)
+void suave(int index, Servo servo, int posicao, int delay_min, int delay_max)
 {
+    /**
+     * Pega a posição atual do servo
+     */
     int posicao_atual = positions[index];
+
+    /**
+     * Armazena a diferença entre os tempos
+     */
+    int diferenca_tempo = delay_max - delay_min;
+
+    /**
+     * O tempo será iniciado com o delay_max
+     */
+    int tempo = delay_max;
 
     /**
      * Se o destino for maior que a posição atual do servo
      * devemos incremetar o grau, até atingir a posição
      */
-    if (posicao > posicao_atual){
+    if (posicao > posicao_atual) {
+
+        /**
+         * Armazena o valor correspondente a diferença da posição desejada
+         * em relação a posição atual, e este valor é didido por dois
+         * isso define a curva de acerelação em parábola.
+         */
+        int metade_diferenca = (posicao - posicao_atual) / 2;
+
+        /**
+         * Este valor será usado para incremendo ou decremento do tempo,
+         * gerando a parábola desejada
+         */
+        int tempo_proporcional = diferenca_tempo / metade_diferenca;
         
+        int j = 0;
+
         for(int i = posicao_atual; i <= posicao; i++) {
+
             servo.write(i);
+
+            /**
+             * Aqui ocorre a aceleração
+             */
+            if (j <= metade_diferenca) {
+                tempo -= tempo_proporcional;
+            }
+
+            /**
+             * Aqui a desaceleração
+             */
+            if (j > metade_diferenca) {
+                tempo += tempo_proporcional;
+            }
+
+            j++;
+
             delay(tempo);
         }
     }
@@ -135,8 +185,41 @@ void suave(int index, Servo servo, int tempo, int posicao)
      */
     else if (posicao < posicao_atual) {
 
+        /**
+         * Armazena o valor correspondente a diferença da posição desejada
+         * em relação a posição atual, e este valor é didido por dois
+         * isso define a curva de acerelação em parábola.
+         */
+        int metade_diferenca = (posicao_atual - posicao) / 2;
+
+        /**
+         * Este valor será usado para incremendo ou decremento do tempo,
+         * gerando a parábola desejada
+         */
+        int tempo_proporcional = diferenca_tempo / metade_diferenca;
+
+        int j = 0;
+
         for(int i = posicao_atual; i >= posicao; i--) {
+
             servo.write(i);
+
+            /**
+             * Aqui ocorre a aceleração
+             */
+            if (j <= metade_diferenca) {
+                tempo -= tempo_proporcional;
+            }
+
+            /**
+             * Aqui a desaceleração
+             */
+            if (j > metade_diferenca) {
+                tempo += tempo_proporcional;
+            }
+
+            j++;
+
             delay(tempo);
         }
     }
